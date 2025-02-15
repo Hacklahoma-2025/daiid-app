@@ -1,4 +1,4 @@
-def Dafilab_Image_Classification(image_path):
+def test(image_path):
     import torch
     from torchvision import transforms
     from PIL import Image
@@ -8,6 +8,7 @@ def Dafilab_Image_Classification(image_path):
     # Parameters
     IMG_SIZE = 380
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    LABEL_MAPPING = {1: "human", 0: "ai"}
 
     # Download model from HuggingFace Hub
     MODEL_PATH = hf_hub_download(repo_id="Dafilab/ai-image-detector", filename="model_epoch_8_acc_0.9859.pth")
@@ -32,52 +33,95 @@ def Dafilab_Image_Classification(image_path):
         with torch.no_grad():
             logits = model(img)
             probs = torch.nn.functional.softmax(logits, dim=1)
-            ai_confidence = probs[0, 0].item()  # Confidence that the image is AI-generated
-        return ai_confidence
+            predicted_class = torch.argmax(probs, dim=1).item()
+            confidence = probs[0, predicted_class].item()
+        return LABEL_MAPPING[predicted_class], confidence
 
-    ai_confidence = predict_image(image_path)
-    
-    return ai_confidence
+    # Example usage
+    label, confidence = predict_image(image_path)
+    print(f"Label: {label}, Confidence: {confidence:.2f}")
 
+# https://huggingface.co/jacoballessio/ai-image-detect/tree/main
 def jacoballessio_Image_Classification(image_path):
-    import torch
-    from PIL import Image
-    from torchvision import transforms
-    from transformers import ViTForImageClassification
+    # Use a pipeline as a high-level helper
+    from transformers import pipeline
 
-    # Load the trained model
-    model_path = 'vit_model.pth'
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
-    model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-    model.eval()
-
-    # Define the image preprocessing pipeline
-    preprocess = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
-    def predict_image(image_path):
-        # Load and preprocess the image
-        image = Image.open(image_path).convert('RGB')
-        inputs = preprocess(image).unsqueeze(0)
-
-        # Perform inference
-        with torch.no_grad():
-            outputs = model(inputs).logits
-            probs = torch.nn.functional.softmax(outputs, dim=1)
-            ai_confidence = probs[0, 0].item()  # Confidence that the image is AI-generated
-        return ai_confidence
-
-    ai_confidence = predict_image(image_path)
+    pipe = pipeline("image-classification", model="jacoballessio/ai-image-detect")
     
+    # Prediction
+    result = pipe(image_path)
+    
+    ai_confidence = -1
+    for i in range(len(result)):
+        if result[i]['label'] == 'fake':
+            ai_confidence = result[i]['score']
+            break
+    
+    # print(result)
     return ai_confidence
 
+# https://huggingface.co/Organika/sdxl-detector/tree/main
+def sdxl_Image_Classification(image_path):
+    # Use a pipeline as a high-level helper
+    from transformers import pipeline
+
+    pipe = pipeline("image-classification", model="Organika/sdxl-detector")
+    
+    # Prediction
+    result = pipe(image_path)
+    # ai_confidence = result[0]['score']  # Confidence that the image is AI-generated
+    
+    ai_confidence = -1
+    for i in range(len(result)):
+        if result[i]['label'] == 'artificial':
+            ai_confidence = result[i]['score']
+            break
+    
+    # print(result)
+    return ai_confidence
+
+# https://huggingface.co/jacoballessio/ai-image-detect-distilled/tree/main
+def jacoballessio_distilled_Image_Classification(image_path):
+    # Use a pipeline as a high-level helper
+    from transformers import pipeline
+
+    pipe = pipeline("image-classification", model="jacoballessio/ai-image-detect-distilled") 
+    
+    # Prediction
+    result = pipe(image_path)
+    # ai_confidence = result[0]['score']  # Confidence that the image is AI-generated
+    
+    ai_confidence = -1
+    for i in range(len(result)):
+        if result[i]['label'] == 'fake':
+            ai_confidence = result[i]['score']
+            break
+    
+    return ai_confidence   
+
+def dima806_Image_Classification(image_path):
+    # Use a pipeline as a high-level helper
+    from transformers import pipeline
+
+    pipe = pipeline("image-classification", model="dima806/ai_vs_real_image_detection")
+
+    # Prediction
+    result = pipe(image_path)
+    
+    # get the confidence that the image is FAKE
+    # there will be an array of 2 elements, find the one with the label 'FAKE'
+    ai_confidence = -1
+    for i in range(len(result)):
+        if result[i]['label'] == 'FAKE':
+            ai_confidence = result[i]['score']
+            break
+    
+    return ai_confidence
 
 def is_image_AI_generated(image_path):
-    # ai_confidence = Dafilab_Image_Classification(image_path)
     ai_confidence = jacoballessio_Image_Classification(image_path)
+    # ai_confidence = sdxl_Image_Classification(image_path)
+    # ai_confidence = jacoballessio_distilled_Image_Classification(image_path)
+    # ai_confidence = dima806_Image_Classification(image_path)
     return ai_confidence
 
