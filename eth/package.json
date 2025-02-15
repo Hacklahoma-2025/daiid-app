@@ -6,7 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "deploy-remote": "npx hardhat run scripts/deploy.js --network remote"
   },
   "author": "",
   "license": "ISC",
