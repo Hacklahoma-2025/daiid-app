@@ -99,6 +99,7 @@ def jacoballessio_distilled_Image_Classification(image_path):
     
     return ai_confidence   
 
+# https://huggingface.co/dima806/ai_vs_real_image_detection/tree/main
 def dima806_Image_Classification(image_path):
     # Use a pipeline as a high-level helper
     from transformers import pipeline
@@ -118,6 +119,27 @@ def dima806_Image_Classification(image_path):
     
     return ai_confidence
 
+# https://huggingface.co/Hemg/AI-VS-REAL-IMAGE-DETECTION
+def Hemg_Image_Classification(image_path):
+    # Use a pipeline as a high-level helper
+    from transformers import pipeline
+
+    pipe = pipeline("image-classification", model="Hemg/AI-VS-REAL-IMAGE-DETECTION")
+
+    # Prediction
+    result = pipe(image_path)
+    
+    # get the confidence that the image is FAKE
+    # there will be an array of 2 elements, find the one with the label 'FAKE'
+    ai_confidence = -1
+    for i in range(len(result)):
+        if result[i]['label'] == 'FAKE':
+            ai_confidence = result[i]['score']
+            break
+    
+    # print(result)
+    return ai_confidence
+
 def is_image_AI_generated(image_path):
     """
     Returns the confidence that the image is AI-generated (0-1)
@@ -129,5 +151,6 @@ def is_image_AI_generated(image_path):
     ai_confidence = sdxl_Image_Classification(image_path) # GOOD, (Great at AI detection)
     # ai_confidence = jacoballessio_distilled_Image_Classification(image_path) # KINDA ASS
     # ai_confidence = dima806_Image_Classification(image_path) # EH
+    # ai_confidence = Hemg_Image_Classification(image_path) # Pretty bad 
     return ai_confidence
 
