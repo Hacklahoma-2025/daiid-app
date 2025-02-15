@@ -1,0 +1,5 @@
+torch
+torchvision
+timm
+huggingface_hub
+pillow
