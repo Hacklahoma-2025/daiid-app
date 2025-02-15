@@ -2,17 +2,16 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("DAIID Contract", function () {
-  let DAIID, daiid, owner, addr1, addr2, addr3;
+  let daiid, owner, addr1, addr2, addr3;
 
   beforeEach(async function () {
     [owner, addr1, addr2, addr3] = await ethers.getSigners();
     const DAIIDFactory = await ethers.getContractFactory("DAIID");
     daiid = await DAIIDFactory.deploy();
-    // No need to call daiid.deployed() because deploy() already returns a deployed contract.
   });
 
   it("Should allow a node to stake and register with initial reputation", async function () {
-    const stakeAmount = ethers.parseEther("1"); // Updated here
+    const stakeAmount = ethers.parseEther("1");
     await daiid.connect(addr1).stake({ value: stakeAmount });
     const node = await daiid.nodes(addr1.address);
     expect(node.stake).to.equal(stakeAmount);
@@ -21,7 +20,7 @@ describe("DAIID Contract", function () {
   });
 
   it("Should allow voting and image registration", async function () {
-    const stakeAmount = ethers.parseEther("1"); // Updated here
+    const stakeAmount = ethers.parseEther("1");
     // Both addr1 and addr2 stake
     await daiid.connect(addr1).stake({ value: stakeAmount });
     await daiid.connect(addr2).stake({ value: stakeAmount });
@@ -37,13 +36,13 @@ describe("DAIID Contract", function () {
 
     // Check consensus (weighted average)
     const consensus = await daiid.getConsensus(imageHash);
-    // Both votes weighted equally (1 ETH each): (80 + 60) / 2 = 70.
+    // With 1 ETH stake each: (80 + 60) / 2 = 70.
     expect(consensus).to.equal(70);
   });
 
-  it("Should finalize vote and update reputations", async function () {
-    const stakeAmount = ethers.parseEther("1"); // Updated here
-    // Stake for addr1 and addr2
+  it("Should revert finalization if fewer than 4 votes are cast", async function () {
+    const stakeAmount = ethers.parseEther("1");
+    // Only two voters stake and vote.
     await daiid.connect(addr1).stake({ value: stakeAmount });
     await daiid.connect(addr2).stake({ value: stakeAmount });
 
@@ -52,23 +51,63 @@ describe("DAIID Contract", function () {
     const ipfsCID = "QmTestCID2";
     await daiid.registerImage(imageHash, ipfsCID);
 
-    // addr1 votes 90, addr2 votes 50 -> consensus should be 70.
+    // addr1 votes 90, addr2 votes 50.
     await daiid.connect(addr1).vote(imageHash, 90);
     await daiid.connect(addr2).vote(imageHash, 50);
 
-    // Finalize the vote to update reputations and adjust stakes.
+    // Finalization should revert because fewer than 4 votes have been cast.
+    await expect(daiid.finalizeVote(imageHash)).to.be.revertedWith(
+      "At least 4 votes required"
+    );
+  });
+
+  it("Should finalize vote and update reputations when 4 votes are cast", async function () {
+    const stakeAmount = ethers.parseEther("1");
+    // Four different signers stake.
+    await daiid.connect(owner).stake({ value: stakeAmount });
+    await daiid.connect(addr1).stake({ value: stakeAmount });
+    await daiid.connect(addr2).stake({ value: stakeAmount });
+    await daiid.connect(addr3).stake({ value: stakeAmount });
+
+    // Register an image.
+    const imageHash = ethers.keccak256(ethers.toUtf8Bytes("image3"));
+    const ipfsCID = "QmTestCID3";
+    await daiid.registerImage(imageHash, ipfsCID);
+
+    // Four votes:
+    // For example, let:
+    //  - owner votes 80,
+    //  - addr1 votes 90,
+    //  - addr2 votes 50,
+    //  - addr3 votes 70.
+    // Total weighted score = 80 + 90 + 50 + 70 = 290, total weight = 4 ETH,
+    // so consensus = floor(290 / 4) = 72.
+    await daiid.connect(owner).vote(imageHash, 80);
+    await daiid.connect(addr1).vote(imageHash, 90);
+    await daiid.connect(addr2).vote(imageHash, 50);
+    await daiid.connect(addr3).vote(imageHash, 70);
+
+    // Finalize the vote (should succeed because 4 votes are cast).
     await daiid.finalizeVote(imageHash);
 
     // Check consensus value.
     const consensus = await daiid.getConsensus(imageHash);
-    expect(consensus).to.equal(70);
+    expect(consensus).to.equal(72);
 
-    // Check reputation updates.
-    // For both voters, the vote difference is 20 (|90-70| and |70-50|),
-    // so each should lose 1 reputation point (from an initial 50 to 49).
+    // Reputation adjustments according to the logic:
+    // For a consensus of 72:
+    // - owner: |80 - 72| = 8  -> accurate (<= 10): +5 reputation => 50 + 5 = 55.
+    // - addr1: |90 - 72| = 18 -> moderately off (>10 and <=30): -1 reputation => 50 - 1 = 49.
+    // - addr2: |72 - 50| = 22 -> moderately off: -1 reputation => 50 - 1 = 49.
+    // - addr3: |70 - 72| = 2  -> accurate: +5 reputation => 50 + 5 = 55.
+    const nodeOwner = await daiid.nodes(owner.address);
     const node1 = await daiid.nodes(addr1.address);
     const node2 = await daiid.nodes(addr2.address);
+    const node3 = await daiid.nodes(addr3.address);
+
+    expect(nodeOwner.reputation).to.equal(55);
     expect(node1.reputation).to.equal(49);
     expect(node2.reputation).to.equal(49);
+    expect(node3.reputation).to.equal(55);
   });
 });
