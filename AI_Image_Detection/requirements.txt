@@ -3,3 +3,4 @@ torchvision
 timm
 huggingface_hub
 pillow
+transformers
