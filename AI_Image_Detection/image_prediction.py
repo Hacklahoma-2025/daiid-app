@@ -119,6 +119,12 @@ def dima806_Image_Classification(image_path):
     return ai_confidence
 
 def is_image_AI_generated(image_path):
+    """
+    Returns the confidence that the image is AI-generated (0-1)
+    0: Real Image
+    1: AI-generated Image
+    -1: Error
+    """
     # ai_confidence = jacoballessio_Image_Classification(image_path) # GOOD (Great at classifying real images)
     ai_confidence = sdxl_Image_Classification(image_path) # GOOD, (Great at AI detection)
     # ai_confidence = jacoballessio_distilled_Image_Classification(image_path) # KINDA ASS
