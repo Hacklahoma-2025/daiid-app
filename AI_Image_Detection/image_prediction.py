@@ -140,17 +140,70 @@ def Hemg_Image_Classification(image_path):
     # print(result)
     return ai_confidence
 
+# Not fully setup because it is bad 
+def MobileNetV3Small_Image_Classification(image_path):
+    import torch
+    import torchvision.models as models
+
+    # Load pre-trained MobileNetV3-Small
+    # model = models.mobilenet_v3_small(weights='DEFAULT')
+    # model = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.IMAGENET1K_V1)
+    model = models.mobilenet_v3_large(weights=models.MobileNet_V3_Large_Weights.IMAGENET1K_V2)
+
+    # Replace the final classifier for binary output (real=0, AI=1)
+    # model.classifier[3] = torch.nn.Linear(in_features=1024, out_features=1)
+    model.classifier[3] = torch.nn.Linear(in_features=1280, out_features=1)
+    model.classifier.append(torch.nn.Sigmoid())  # Add sigmoid for probability
+
+    # Load pre-trained weights (if available)
+    # model.load_state_dict(torch.load('mobilenetv3_real_vs_ai.pth'))
+    
+    from torchvision import transforms
+    from PIL import Image
+
+    def preprocess_image(img_path):
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+        img = Image.open(img_path).convert('RGB')
+        return transform(img).unsqueeze(0)  # Add batch dimension
+    
+    def predict(image_path):
+        model.eval()  # Set model to evaluation mode
+        input_tensor = preprocess_image(image_path)
+        with torch.no_grad():
+            output = model(input_tensor)
+        probability = output.sigmoid().item()  # Convert logit to probability
+        return "AI-generated" if probability > 0.5 else "Real", probability
+
+    # Example usage
+    result, confidence = predict(image_path)
+    print(f"Prediction: {result} (Confidence: {confidence:.2f})")
+    
+    return -1
+
+
 def is_image_AI_generated(image_path):
     """
     Returns the confidence that the image is AI-generated (0-1)
     0: Real Image
     1: AI-generated Image
     -1: Error
+    
+    Used models: 
+    GOOD:
+    - jacoballessio_Image_Classification
+    - sdxl_Image_Classification
+    EH:
+    - dima806_Image_Classification
     """
-    # ai_confidence = jacoballessio_Image_Classification(image_path) # GOOD (Great at classifying real images)
-    ai_confidence = sdxl_Image_Classification(image_path) # GOOD, (Great at AI detection)
+    ai_confidence = jacoballessio_Image_Classification(image_path) # GOOD (Great at classifying real images)
+    # ai_confidence = sdxl_Image_Classification(image_path) # GOOD, (Great at AI detection)
     # ai_confidence = jacoballessio_distilled_Image_Classification(image_path) # KINDA ASS
     # ai_confidence = dima806_Image_Classification(image_path) # EH
     # ai_confidence = Hemg_Image_Classification(image_path) # Pretty bad 
+    # ai_confidence = MobileNetV3Small_Image_Classification(image_path) # ASS
     return ai_confidence
 
