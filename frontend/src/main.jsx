@@ -12,6 +12,7 @@ import UploadPage from "./UploadPage.jsx";
 import App from "./App.jsx";
 import ImageStatus from "./ImageStatus.jsx";
 import Monitor from "./monitor.jsx";
+import ProcessImage from "./ProcessImagePage.jsx";
 
 const theme = createTheme({
   /** Put your mantine theme override here */
@@ -37,7 +38,11 @@ const router = createBrowserRouter([
   {
     path: "/monitor",
     element: <Monitor />,
-  }
+  },
+  {
+    path: "/process-image",
+    element: <ProcessImage />,
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(
