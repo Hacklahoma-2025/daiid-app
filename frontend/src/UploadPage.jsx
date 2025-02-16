@@ -27,9 +27,6 @@ function UploadPage() {
         </Text>
         <Space h={"xl"} />
         <Box>
-          <Button c={"black"} bg={"white"} size="md" onClick={() => {}}>
-            Let's check!
-          </Button>
         </Box>
       </Flex>
     </Container>

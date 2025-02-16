@@ -27,8 +27,6 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <MantineProvider theme={theme}>
-    <RouterProvider router={router}>
-      <App />
-    </RouterProvider>
+    <RouterProvider router={router} />
   </MantineProvider>
 );
