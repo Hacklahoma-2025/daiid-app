@@ -1,4 +1,4 @@
-import "./App.css";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -6,64 +6,63 @@ import {
   Image,
   Flex,
   Paper,
-  rgba,
-  Button,
   Stack,
   Title,
   ScrollArea,
+  rgba,
+  Table
 } from "@mantine/core";
-import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import Navbar from "./Navbar";
-import { useForm } from "@mantine/form";
-import { Center, CloseButton } from "@mantine/core";
-import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  subscribe_image_registration,
-  subscribe_vote_submission,
-  subscribe_vote_finalization,
-} from "../services/ganache_connection.js";
+import { subscribe_vote_submission } from "../services/ganache_connection.js";
+import getConsensus from "../services/GetConsensus.js";
 
 function ImageStatus() {
-  const percent = 34;
-  const location = useLocation();
-  const { file, preview } = location.state || {};
-  console.log(file, preview);
-
+  const { file, preview } = useLocation().state || {};
   const [votes, setVotes] = useState([]);
-  const [totalWeight, setTotalWeight] = useState(0);
-  /// State to accumulate vote submissions
+  const [consensus, setConsensus] = useState("x");
+  const [base64, setBase64] = useState(null);
+  const [totalWeight, setTotalWeight] = useState(1n);
+
+  // Convert uploaded file to base64
   useEffect(() => {
-    console.log("Votes updated:", votes);
-    setTotalWeight(votes.reduce((acc, vote) => acc + Number(vote.weight), 0));
-  }, [votes]);
+    if (file) {
+      const reader = new FileReader();
+      reader.onerror = () => console.error("Failed to read file");
+      reader.onload = () => setBase64(reader.result);
+      reader.readAsDataURL(file);
+    }
+  }, [file]);
 
+  // Subscribe to vote events
   useEffect(() => {
-    // Subscribe to vote events
-    const subscribeVotes = async () => {
-      const subscription = await subscribe_vote_submission((voteData) => {
-        // Append new vote data to the votes array
-        setVotes((prevVotes) => [...prevVotes, voteData]);
-        console.log(voteData);
-      });
+    console.log("Subscribing to vote events...");
+    const subscription = subscribe_vote_submission((voteData) => {
+      setVotes((prevVotes) => [...prevVotes, voteData]);
+    });
 
-      // (Optional) unsubscribe when the component unmounts
-      return () => {
-        if (subscription && subscription.unsubscribe) {
-          subscription.unsubscribe();
-        }
-      };
-    };
-
-    const unsubscribe = subscribeVotes();
-
-    // Clean up subscription on unmount
     return () => {
-      if (typeof unsubscribe === "function") {
-        unsubscribe();
+      if (subscription?.unsubscribe) {
+        console.log("Unsubscribing from vote events...");
+        subscription.unsubscribe();
       }
     };
   }, []);
+
+  // Update consensus and total weight whenever votes or base64 changes
+  useEffect(() => {
+    const weightSum = votes.reduce(
+      (acc, vote) => acc + vote.weight,
+      1n
+    );
+    setTotalWeight(weightSum);
+
+    if (base64) {
+      getConsensus(base64)
+        .then((result) => setConsensus(result))
+        .catch((err) => console.error("Error updating consensus:", err));
+    }
+  }, [votes, base64]);
 
   return (
     <Container m={0} fluid align="center" h={"90vh"}>
@@ -99,25 +98,31 @@ function ImageStatus() {
               This image is
             </Text>
             <Title align="center" c={"white"}>
-              {percent}%
+              {consensus === null ? "X" : `${consensus}%`}
             </Title>
             <Text align="center" size="lg" c={"white"}>
               likely to be AI generated.
             </Text>
             <ScrollArea h={350} my={5}>
-              {votes.map((i) => (
-                <Paper
-                  bg={rgba("#8C96D6", 0.3)}
-                  c={"white"}
-                  r="md"
-                  p={15}
-                  my={15}
-                  key={i}
-                >
-                  {i.node} voted {i.score}% {Number(i.weight) / totalWeight *100}%
-                </Paper>
-              ))}
-            </ScrollArea>
+              <Table highlightOnHover withBorder style={{ color: "white" }}>
+                <thead>
+                  <tr>
+                    <th>Node</th>
+                    <th>Score (%)</th>
+                    <th>Weight (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {votes.map((vote, index) => (
+                    <tr key={index}>
+                      <td>{vote.node.substring(0, 10)}...</td>
+                      <td>{vote.score}%</td>
+                      <td>{((Number(vote.weight) / Number(totalWeight)) * 100).toFixed(2)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </ScrollArea>;
           </Stack>
         </Paper>
       </Flex>
