@@ -114,7 +114,7 @@ function ImageStatus() {
                   my={15}
                   key={i}
                 >
-                  {i.node} voted {i.score} {Number(i.weight) / totalWeight *100}%
+                  {i.node} voted {i.score}% {Number(i.weight) / totalWeight *100}%
                 </Paper>
               ))}
             </ScrollArea>
