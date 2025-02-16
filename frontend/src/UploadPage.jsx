@@ -20,19 +20,20 @@ import { useState } from "react";
 
 function UploadPage() {
   return (
-    <Container m={0} fluid align="center">
+    <Container m={0} fluid align="center" h={"90vh"}>
       <Navbar />
-      <Space h={40} />
-      <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
-        <Stack gap={0}>
-          <Demo />
-          <Box>
-            <Button c={"black"} bg={"white"} size="md" mt={30}>
-              Evaluate
-            </Button>
-          </Box>
-        </Stack>
-      </Paper>
+      <Flex direction="column" h={"75vh"} align={"center"} justify={"center"}>
+        <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
+          <Stack gap={0}>
+            <Demo />
+            <Box>
+              <Button c={"black"} bg={"white"} size="md" mt={30}>
+                Evaluate
+              </Button>
+            </Box>
+          </Stack>
+        </Paper>
+      </Flex>
     </Container>
   );
 }
