@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "Image Analyzer",
+    "version": "1.0",
+    "permissions": ["activeTab", "scripting", "storage"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ]
+  }
+  
