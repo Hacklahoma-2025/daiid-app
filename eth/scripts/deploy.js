@@ -3,11 +3,10 @@ async function main() {
   // Get the contract factory for DAIID
   const DAIID = await ethers.getContractFactory("DAIID");
 
-  // Deploy the contract (you can pass constructor arguments here if needed)
+  // Deploy the contract (no need to call daiid.deployed() afterwards)
   const daiid = await DAIID.deploy();
-  await daiid.deployed();
 
-  console.log("DAIID deployed to:", daiid.address);
+  console.log("DAIID deployed to:", daiid);
 }
 
 // Execute the deployment script and handle errors.
