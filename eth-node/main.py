@@ -7,6 +7,7 @@ import magic  # or import magic from python-magic-bin on Windows
 from web3 import Web3
 from dotenv import load_dotenv
 from ai_detection.image_prediction import is_image_AI_generated
+import threading
 
 # Load environment variables from .env file
 load_dotenv()
@@ -74,11 +75,37 @@ def detect_ai_probability(filee_path):
     Replace this function with your actual AI detection logic.
     Returns an integer between 0 and 100.
     """
-    return is_image_AI_generated(filee_path)
+    return int(is_image_AI_generated(filee_path) * 100)
 
 # -----------------------
 # Event Handling Function
 # -----------------------
+
+
+def try_finalize_vote(image_hash):
+    """
+    Attempts to finalize the vote for an image. If the transaction reverts because
+    the vote has already been finalized or because there are not enough votes yet,
+    the exception is caught and logged.
+    """
+    nonce = w3.eth.get_transaction_count(account_address)
+    txn = contract.functions.finalizeVote(image_hash).build_transaction({
+        'from': account_address,
+        'nonce': nonce,
+        'gas': 300000,
+        'gasPrice': w3.to_wei('50', 'gwei')
+    })
+
+    signed_txn = w3.eth.account.sign_transaction(txn, private_key=private_key)
+    try:
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        print("finalizeVote transaction sent. Tx hash:", tx_hash.hex())
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        print("finalizeVote transaction mined:", receipt)
+    except Exception as e:
+        # Here, you might check the error message to determine if it's because the vote
+        # has already been finalized or there are not enough votes.
+        print("finalizeVote failed:", e)
 
 
 def handle_new_image_event(event):
@@ -125,6 +152,13 @@ def handle_new_image_event(event):
 
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     print("Transaction receipt:", receipt)
+
+    def delayed_finalize(image_hash, delay=10):
+        time.sleep(delay)
+        print(f"Finalizing vote for image {image_hash}")
+        try_finalize_vote(image_hash)
+
+    threading.Thread(target=delayed_finalize, args=(image_hash,)).start()
 
 # -----------------------
 # Main Listener Loop
