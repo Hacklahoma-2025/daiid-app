@@ -29,7 +29,12 @@ function ImageStatus() {
   console.log(file, preview);
 
   const [votes, setVotes] = useState([]);
+  const [totalScore, setTotalScore] = useState(0);
   /// State to accumulate vote submissions
+  useEffect(() => {
+    console.log("Votes updated:", votes);
+    setTotalScore(votes.reduce((acc, vote) => acc + vote.score, 0));
+  }, [votes]);
 
   useEffect(() => {
     // Subscribe to vote events
@@ -37,7 +42,7 @@ function ImageStatus() {
       const subscription = await subscribe_vote_submission((voteData) => {
         // Append new vote data to the votes array
         setVotes(prevVotes => [...prevVotes, voteData]);
-        console.log(votes);
+        console.log(voteData);
       });
 
       // (Optional) unsubscribe when the component unmounts

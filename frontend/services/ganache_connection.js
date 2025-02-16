@@ -67,6 +67,7 @@ async function subscribe_vote_submission(callback) {
 			score: event.returnValues[2],
 			weight: event.returnValues[3],
 		}
+		console.log(data);
 		callback(data);
 	});
 }
