@@ -6,3 +6,4 @@ timm
 huggingface_hub
 pillow
 transformers
+python-magic 
