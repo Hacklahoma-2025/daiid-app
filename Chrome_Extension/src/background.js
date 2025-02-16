@@ -4,9 +4,9 @@ const GANACHE_SERVER = "http://10.204.202.78:7545/";
 const GANACHE_WS = "ws://10.204.202.78:7545";
 const ETH_PROVIDER = "http://10.204.202.78:7545/";
 const IPFS_PROVIDER = "/ip4/10.204.202.78/tcp/5001";
-const ETH_PUBLIC_ADDRESS = "0x1c022438Ed60A1076c045246E417dCE817A47EB6";
-const ETH_PRIVATE_ADDRESS = "0xbf9b6643b055fec057910dacbd1374326f703ec48c5d5ad88b5e35016a42ad3d";
-const DAIID_ADDRESS = "0xF68345F2e188D910498c9CBE6f4A7ba9E6C7CaaD";
+const ETH_PUBLIC_ADDRESS = "0x76081A764f3670420855aB215bB338aa1D30DD70";
+const ETH_PRIVATE_ADDRESS = "0x83767138edbb35930c0b20b110260bf513503939e7d5e95eab5fd38e7253e3f8";
+const DAIID_ADDRESS = "0xb21D11A3dc0558Acdcb8d02fbeb1F47312C17495";
 const PRIVATE_KEY = ETH_PRIVATE_ADDRESS;
 const PUBLIC_ADDRESS = ETH_PUBLIC_ADDRESS;
 
@@ -704,6 +704,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             } catch (err) {
                 console.error(`Error processing image at URL ${url}:`, err);
             }
+            // sleep for 1 second to avoid rate limiting
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     }
 });
