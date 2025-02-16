@@ -184,7 +184,6 @@ def MobileNetV3Small_Image_Classification(image_path):
     
     return -1
 
-
 def is_image_AI_generated(image_path):
     """
     Returns the confidence that the image is AI-generated (0-1)
