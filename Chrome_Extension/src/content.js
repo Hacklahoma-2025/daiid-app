@@ -13,14 +13,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.imageUpdate) {
     // Updated to use consensus property from background.js
     const { imageUrl, consensus } = message.imageUpdate;
-    const result = parseFloat(consensus) / 100;
+    const result = consensus;
 
     // Determine color and label based on confidence thresholds
     let color, label;
-    if (result >= 0.66) {
+    if (result >= 66) {
       color = "#ff0000"; // red for high AI likelihood
       label = "High AI Likelihood";
-    } else if (result >= 0.33) {
+    } else if (result >= 33) {
       color = "#ffc107"; // yellow for moderate AI likelihood
       label = "Moderate AI Likelihood";
     } else {
@@ -55,7 +55,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       
       // Set the overlay text and color
-      overlay.textContent = `${label}: ${result.toFixed(2)}`;
+      overlay.textContent = `${label}: ${result}%`;
       overlay.style.color = color;
     });
   }
