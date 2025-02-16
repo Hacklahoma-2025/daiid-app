@@ -1,15 +1,16 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: "../.env" });
+// import dotenv from 'dotenv';
+// dotenv.config({ path: "../.env" });
 import { Web3, WebSocketProvider } from 'web3';
-import daiid from './DAIID.json' assert { type: 'json' };
-console.log(daiid)
+// import daiid from '../../tests/DAIID.json' assert { type: 'json' };
+// console.log(daiid)
+import abi from '../configs/abi_config.js';
 
 // Web Socket url
-const ganache_ws = process.env.GANACHE_WS;
+const ganache_ws = import.meta.env.VITE_GANACHE_WS;
 
 // address of the contract
-const address = process.env.DAIID_ADDRESS
-const abi = daiid['abi'];
+const address = import.meta.env.VITE_DAIID_ADDRESS
+// const abi = abi.abi;
 
 // Create a new WebsocketProvider
 const provider = new WebSocketProvider(
@@ -56,7 +57,7 @@ async function subscribe_image_registration() {
 	});
 }
 
-async function subscribe_vote_submission() {
+async function subscribe_vote_submission(callback) {
 	const contract = new web3.eth.Contract(abi, address);
 	const subscription = contract.events.Voted();
 	subscription.on('data', (event) => {
@@ -66,7 +67,7 @@ async function subscribe_vote_submission() {
 			score: event.returnValues[2],
 			weight: event.returnValues[3],
 		}
-		process_vote_submission(data);
+		callback(data);
 	});
 }
 
@@ -82,3 +83,5 @@ async function subscribe_vote_finalization() {
 		process_vote_finalization(data);
 	});
 }
+
+export { subscribe_image_registration, subscribe_vote_submission, subscribe_vote_finalization };

@@ -16,14 +16,47 @@ import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import Navbar from "./Navbar";
 import { useForm } from "@mantine/form";
 import { Center, CloseButton } from "@mantine/core";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { subscribe_image_registration, subscribe_vote_submission, subscribe_vote_finalization } from "../services/ganache_connection.js";
+
+
 
 function ImageStatus() {
   const percent = 34;
   const location = useLocation();
   const { file, preview } = location.state || {};
   console.log(file, preview);
+
+  const [votes, setVotes] = useState([]);
+  /// State to accumulate vote submissions
+
+  useEffect(() => {
+    // Subscribe to vote events
+    const subscribeVotes = async () => {
+      const subscription = await subscribe_vote_submission((voteData) => {
+        // Append new vote data to the votes array
+        setVotes(prevVotes => [...prevVotes, voteData]);
+        console.log(votes);
+      });
+
+      // (Optional) unsubscribe when the component unmounts
+      return () => {
+        if (subscription && subscription.unsubscribe) {
+          subscription.unsubscribe();
+        }
+      }
+    };
+
+    const unsubscribe = subscribeVotes();
+
+    // Clean up subscription on unmount
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    }
+  }, []);
 
   return (
     <Container m={0} fluid align="center" h={"90vh"}>

@@ -77,7 +77,7 @@ function UploadPage() {
         console.log("Base64 output:", base64);
 
         // Call the registerImage function
-        // await registerImage(base64);
+        await registerImage(base64);
         navigate("/image-status", { state: { file, preview } });
       } catch (error) {
         console.error("Error computing base64:", error);
