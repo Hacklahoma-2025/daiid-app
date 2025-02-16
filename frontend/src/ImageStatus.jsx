@@ -17,9 +17,14 @@ import Navbar from "./Navbar";
 import { useForm } from "@mantine/form";
 import { Center, CloseButton } from "@mantine/core";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 function ImageStatus() {
   const percent = 34;
+  const location = useLocation();
+  const { file, preview } = location.state || {};
+  console.log(file, preview);
+
   return (
     <Container m={0} fluid align="center" h={"90vh"}>
       <Navbar />
@@ -32,10 +37,14 @@ function ImageStatus() {
       >
         <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
           <Stack gap={0}>
-            <Box>
-              <Button c={"black"} bg={"white"} size="md" mt={30}>
-                Evaluate
-              </Button>
+            <Box position="relative">
+              <Image
+                src={preview}
+                alt="Preview"
+                width="100%"
+                fit="contain"
+                mt={30}
+              />
             </Box>
           </Stack>
         </Paper>

@@ -19,8 +19,7 @@ import { Center, CloseButton } from "@mantine/core";
 import { useState } from "react";
 import registerImage from "../services/uploadRequest_new.js";
 import getConsensus from "../services/GetConsensus.js";
-
-
+import { useNavigate } from "react-router-dom";
 
 function UploadPage() {
   const [file, setFile] = useState(null);
@@ -30,6 +29,7 @@ function UploadPage() {
   });
 
   const [preview, setPreview] = useState(null);
+  const navigate = useNavigate();
 
   const handleDrop = (files) => {
     const file = files[0]; // Only take the first file
@@ -65,7 +65,6 @@ function UploadPage() {
   const handleClick = async () => {
     if (file) {
       try {
-
         // Compute base64 string from file
         const base64 = await new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -78,9 +77,9 @@ function UploadPage() {
         console.log("Base64 output:", base64);
 
         // Call the registerImage function
-        await registerImage(base64);
-      }
-      catch (error) {
+        // await registerImage(base64);
+        navigate("/image-status", { state: { file, preview } });
+      } catch (error) {
         console.error("Error computing base64:", error);
       }
     } else {
@@ -88,61 +87,68 @@ function UploadPage() {
     }
   };
 
-
   return (
     <Container m={0} fluid align="center">
       <Navbar />
       <Space h={20} />
       <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
         <Stack gap={0}>
-        <>
-      {!preview ? (
-        <Dropzone
-          bg={rgba("#8C96D6", 0.3)}
-          h={250}
-          c={"white"}
-          p={0}
-          multiple={false} // Only allow one file
-          accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
-          onDrop={handleDrop}
-          onReject={() => form.setFieldError("file", "Select an image only")}
-        >
-          <Center h={250} p={10}>
-            <Dropzone.Idle>
-              Drop your image here or select a file from your computer
-            </Dropzone.Idle>
-            <Dropzone.Accept>
-              Drop your image here or select a file from your computer
-            </Dropzone.Accept>
-            <Dropzone.Reject>File is invalid</Dropzone.Reject>
-          </Center>
-        </Dropzone>
-      ) : (
-        <>
-          <Text mb={5} mt="md" c={"white"}>
-            Selected file:
-          </Text>
-          {selectedFile}
-          <Box position="relative">
-            <Image
-              src={preview}
-              alt="Preview"
-              width="100%"
-              fit="contain"
-              mt={30}
-            />
-          </Box>
-        </>
-      )}
+          <>
+            {!preview ? (
+              <Dropzone
+                bg={rgba("#8C96D6", 0.3)}
+                h={250}
+                c={"white"}
+                p={0}
+                multiple={false} // Only allow one file
+                accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+                onDrop={handleDrop}
+                onReject={() =>
+                  form.setFieldError("file", "Select an image only")
+                }
+              >
+                <Center h={250} p={10}>
+                  <Dropzone.Idle>
+                    Drop your image here or select a file from your computer
+                  </Dropzone.Idle>
+                  <Dropzone.Accept>
+                    Drop your image here or select a file from your computer
+                  </Dropzone.Accept>
+                  <Dropzone.Reject>File is invalid</Dropzone.Reject>
+                </Center>
+              </Dropzone>
+            ) : (
+              <>
+                <Text mb={5} mt="md" c={"white"}>
+                  Selected file:
+                </Text>
+                {selectedFile}
+                <Box position="relative">
+                  <Image
+                    src={preview}
+                    alt="Preview"
+                    width="100%"
+                    fit="contain"
+                    mt={30}
+                  />
+                </Box>
+              </>
+            )}
 
-      {form.errors.file && (
-        <Text c="red" mt={5}>
-          {form.errors.file}
-        </Text>
-      )}
-    </>
+            {form.errors.file && (
+              <Text c="red" mt={5}>
+                {form.errors.file}
+              </Text>
+            )}
+          </>
           <Box>
-            <Button c={"black"} bg={"white"} size="md" mt={30} onClick={handleClick}>
+            <Button
+              c={"black"}
+              bg={"white"}
+              size="md"
+              mt={30}
+              onClick={handleClick}
+            >
               Evaluate
             </Button>
           </Box>
