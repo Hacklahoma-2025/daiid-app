@@ -84,20 +84,14 @@ function Monitor() {
               Monitor Transactions
             </Title>
             <Grid mt={10}>
-              <GridCol span={6}>
+              <GridCol span={8}>
                 <Text c={"white"} fw={600}>
                   Node
                 </Text>
               </GridCol>
-              <GridCol span={3}>
+              <GridCol span={4}>
                 <Text c={"white"} fw={600}>
                   Score (%)
-                </Text>
-              </GridCol>
-              <GridCol span={3}>
-                {" "}
-                <Text c={"white"} fw={600}>
-                  Weight (%)
                 </Text>
               </GridCol>
             </Grid>
@@ -106,18 +100,11 @@ function Monitor() {
                 <Table.Tbody>
                   {votes.map((vote, index) => (
                     <Table.Tr key={index}>
-                      <Table.Td w={"50%"} align="center">
+                      <Table.Td w={"67%"} align="center">
                         {vote.node.substring(0, 20)}...
                       </Table.Td>
-                      <Table.Td w={"25%"} align="center">
+                      <Table.Td w={"33%"} align="center">
                         {vote.score}%
-                      </Table.Td>
-                      <Table.Td w={"25%"} align="center">
-                        {(
-                          (Number(vote.weight) / Number(totalWeight)) *
-                          100
-                        ).toFixed(2)}
-                        %
                       </Table.Td>
                     </Table.Tr>
                   ))}
