@@ -24,7 +24,7 @@ if not w3.is_connected():
     raise Exception("Could not connect to the Ethereum node!")
 
 # Load the contract artifact and extract the ABI
-with open("./eth/artifacts/contracts/DAIID.sol/DAIID.json", "r") as f:
+with open("./eth-node/DAIID.json", "r") as f:
     artifact = json.load(f)
 contract_abi = artifact["abi"]
 
@@ -44,6 +44,9 @@ if not ipfs_provider:
     raise Exception(
         "Please set the IPFS_PROVIDER environment variable in your .env file.")
 # We assume IPFS_PROVIDER is provided as an HTTP gateway URL, e.g., "http://10.204.202.78:8080"
+
+
+
 
 # -----------------------
 # IPFS Interaction using Requests
@@ -133,7 +136,7 @@ def handle_new_image_event(event):
 
     # Build the transaction to cast the vote
     nonce = w3.eth.get_transaction_count(account_address)
-    txn = contract.functions.vote(image_hash, probability).buildTransaction({
+    txn = contract.functions.vote(image_hash, probability).build_transaction({
         'from': account_address,
         'nonce': nonce,
         'gas': 2000000,
@@ -141,7 +144,7 @@ def handle_new_image_event(event):
     })
 
     signed_txn = w3.eth.account.sign_transaction(txn, private_key=private_key)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
     print("Vote transaction sent. Tx hash:", tx_hash.hex())
 
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -156,6 +159,23 @@ def main():
     print("Node application started. Listening for new image registration events...")
     event_filter = contract.events.ImageRegistered.create_filter(
         from_block='latest')
+
+    # Build the stake transaction (assuming your account has enough Ether)
+    stake_txn = contract.functions.stake().build_transaction({
+        'from': account_address,
+        'value': w3.to_wei(0.1, 'ether'),  # adjust the stake amount as needed
+        'nonce': w3.eth.get_transaction_count(account_address),
+        'gas': 200000,
+        'gasPrice': w3.to_wei('50', 'gwei')
+    })
+
+    signed_stake_txn = w3.eth.account.sign_transaction(stake_txn, private_key=private_key)
+    stake_tx_hash = w3.eth.send_raw_transaction(signed_stake_txn.raw_transaction)
+    print("Stake transaction sent. Tx hash:", stake_tx_hash.hex())
+
+    # Wait for the transaction to be mined (optional)
+    receipt = w3.eth.wait_for_transaction_receipt(stake_tx_hash)
+    print("Stake transaction mined.")
     while True:
         try:
             print("HERE")

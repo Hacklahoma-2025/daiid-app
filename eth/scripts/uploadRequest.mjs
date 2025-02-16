@@ -1,13 +1,14 @@
-// upload.js
-require("dotenv").config();
-const fs = require("fs");
-const { ethers } = require("ethers");
-const { create } = require("ipfs-http-client");
+// uploadRequest.mjs
+import dotenv from "dotenv";
+dotenv.config();
+import fs from "fs";
+import { ethers } from "ethers";
+import { create } from "ipfs-http-client";
 
 // Get the file path from command-line arguments
 const filePath = process.argv[2];
 if (!filePath) {
-  console.error("Usage: node upload.js <filePath>");
+  console.error("Usage: node uploadRequest.mjs <filePath>");
   process.exit(1);
 }
 
@@ -31,13 +32,13 @@ if (
   throw new Error("Missing required environment variables.");
 }
 
-// Set up ethers provider and wallet
-const provider = new ethers.providers.JsonRpcProvider(ETH_PROVIDER);
+// Set up ethers provider and wallet (using ethers v6)
+const provider = new ethers.JsonRpcProvider(ETH_PROVIDER);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 
 // Load the compiled contract artifact (ensure the path is correct)
 const artifact = JSON.parse(
-  fs.readFileSync("./eth/artifacts/contracts/DAIID.sol/DAIID.json")
+  fs.readFileSync("./artifacts/contracts/DAIID.sol/DAIID.json")
 );
 const abi = artifact.abi;
 
@@ -45,7 +46,7 @@ const abi = artifact.abi;
 const contract = new ethers.Contract(DAIID_ADDRESS, abi, wallet);
 
 // Create an IPFS client using the provider URL from .env
-// (For browser-based use you might use a different client, but this works in Node)
+// Ensure IPFS_PROVIDER is an HTTP URL, e.g., "http://10.204.202.78:5001"
 const ipfs = create({ url: IPFS_PROVIDER });
 
 async function main() {
@@ -55,7 +56,7 @@ async function main() {
   console.log("File uploaded to IPFS with CID:", cid);
 
   // Compute the keccak256 hash of the file
-  const fileHash = ethers.utils.keccak256(fileBuffer);
+  const fileHash = ethers.keccak256(fileBuffer);
   console.log("Computed file hash:", fileHash);
 
   // Register the image on-chain by calling the contract function
