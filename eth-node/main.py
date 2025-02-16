@@ -3,6 +3,7 @@ import time
 import random
 import os
 import requests
+import magic  # or import magic from python-magic-bin on Windows
 from web3 import Web3
 from dotenv import load_dotenv
 
@@ -42,7 +43,7 @@ ipfs_provider = os.environ.get("IPFS_PROVIDER")
 if not ipfs_provider:
     raise Exception(
         "Please set the IPFS_PROVIDER environment variable in your .env file.")
-# We assume IPFS_PROVIDER is provided as an HTTP URL (e.g., "http://10.204.202.78:5001")
+# We assume IPFS_PROVIDER is provided as an HTTP gateway URL, e.g., "http://10.204.202.78:8080"
 
 # -----------------------
 # IPFS Interaction using Requests
@@ -51,12 +52,10 @@ if not ipfs_provider:
 
 def ipfs_cat(cid):
     """
-    Fetch file content from IPFS using the HTTP API.
+    Fetch file content from IPFS using the HTTP gateway.
     """
-    # Construct the URL for the cat command.
-    # This will be something like: http://10.204.202.78:5001/api/v0/cat?arg=<cid>
-    url = f"{ipfs_provider.rstrip('/')}/api/v0/cat?arg={cid}"
-    response = requests.post(url)
+    url = f"{ipfs_provider.rstrip('/')}/ipfs/{cid}"
+    response = requests.get(url)
     if response.status_code != 200:
         raise Exception(
             f"IPFS cat failed: {response.status_code} {response.text}")
@@ -84,25 +83,49 @@ def handle_new_image_event(event):
     """
     Processes a new ImageRegistered event:
       - Downloads the image from IPFS using the provided CID.
+      - Saves the image to a folder with an appropriate file extension.
       - Runs the AI detection function.
       - Posts a vote on the network with the detected probability.
     """
     print("New ImageRegistered event received:")
     print(event)
 
-    # Extract the event arguments
     image_hash = event['args']['imageHash']
     ipfs_cid = event['args']['ipfsCID']
     print(f"Image hash: {image_hash}")
     print(f"IPFS CID: {ipfs_cid}")
 
-    # Download the image from IPFS using the HTTP API
     try:
         image_data = ipfs_cat(ipfs_cid)
         print(f"Downloaded image data of length: {len(image_data)} bytes")
     except Exception as e:
         print("Failed to download image from IPFS:", e)
         return
+
+    # Save the image with the correct file type
+    download_folder = "downloaded_images"
+    if not os.path.exists(download_folder):
+        os.makedirs(download_folder)
+
+    # Use python-magic to detect the MIME type of the image
+    mime = magic.Magic(mime=True)
+    mime_type = mime.from_buffer(image_data)
+    print(f"Detected MIME type: {mime_type}")
+
+    # Map MIME types to file extensions (extend this as needed)
+    extension_map = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/gif": ".gif",
+        "image/bmp": ".bmp",
+        "image/webp": ".webp"
+    }
+    file_extension = extension_map.get(mime_type, ".bin")
+    file_path = os.path.join(download_folder, f"{ipfs_cid}{file_extension}")
+
+    with open(file_path, "wb") as f:
+        f.write(image_data)
+    print(f"Image saved to: {file_path}")
 
     # Run the AI detection (placeholder)
     probability = detect_ai_probability(image_data)
@@ -117,12 +140,10 @@ def handle_new_image_event(event):
         'gasPrice': w3.to_wei('50', 'gwei')
     })
 
-    # Sign and send the transaction
     signed_txn = w3.eth.account.sign_transaction(txn, private_key=private_key)
     tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     print("Vote transaction sent. Tx hash:", tx_hash.hex())
 
-    # Wait for the transaction receipt
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     print("Transaction receipt:", receipt)
 
@@ -133,13 +154,12 @@ def handle_new_image_event(event):
 
 def main():
     print("Node application started. Listening for new image registration events...")
-    # Create an event filter for ImageRegistered events from the latest block
     event_filter = contract.events.ImageRegistered.create_filter(
         from_block='latest')
     while True:
         try:
+            print("HERE")
             events = event_filter.get_new_entries()
-            print('here')
             for event in events:
                 handle_new_image_event(event)
         except Exception as e:
@@ -148,7 +168,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # Set up account details from environment variables
     account_address = os.environ.get("ETH_PUBLIC_ADDRESS")
     if not account_address:
         raise Exception(
@@ -157,5 +176,4 @@ if __name__ == "__main__":
     if not private_key:
         raise Exception(
             "Please set the ETH_PRIVATE_ADDRESS environment variable for your node's account.")
-
     main()
