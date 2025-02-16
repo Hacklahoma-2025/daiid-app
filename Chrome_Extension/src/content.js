@@ -11,7 +11,9 @@ window.addEventListener("load", () => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.imageUpdate) {
-    const { imageUrl, result } = message.imageUpdate;
+    // Updated to use consensus property from background.js
+    const { imageUrl, consensus } = message.imageUpdate;
+    const result = parseFloat(consensus) / 100;
 
     // Determine color and label based on confidence thresholds
     let color, label;
@@ -56,4 +58,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       overlay.textContent = `${label}: ${result.toFixed(2)}`;
       overlay.style.color = color;
     });
-}});
+  }
+});
