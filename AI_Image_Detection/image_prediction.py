@@ -1,3 +1,5 @@
+from transformers import pipeline
+
 def test(image_path):
     import torch
     from torchvision import transforms
@@ -44,7 +46,7 @@ def test(image_path):
 # https://huggingface.co/jacoballessio/ai-image-detect/tree/main
 def jacoballessio_Image_Classification(image_path):
     # Use a pipeline as a high-level helper
-    from transformers import pipeline
+    # from transformers import pipeline
 
     pipe = pipeline("image-classification", model="jacoballessio/ai-image-detect")
     
@@ -63,7 +65,7 @@ def jacoballessio_Image_Classification(image_path):
 # https://huggingface.co/Organika/sdxl-detector/tree/main
 def sdxl_Image_Classification(image_path):
     # Use a pipeline as a high-level helper
-    from transformers import pipeline
+    # from transformers import pipeline
 
     pipe = pipeline("image-classification", model="Organika/sdxl-detector")
     
@@ -83,7 +85,7 @@ def sdxl_Image_Classification(image_path):
 # https://huggingface.co/jacoballessio/ai-image-detect-distilled/tree/main
 def jacoballessio_distilled_Image_Classification(image_path):
     # Use a pipeline as a high-level helper
-    from transformers import pipeline
+    # from transformers import pipeline
 
     pipe = pipeline("image-classification", model="jacoballessio/ai-image-detect-distilled") 
     
@@ -102,7 +104,7 @@ def jacoballessio_distilled_Image_Classification(image_path):
 # https://huggingface.co/dima806/ai_vs_real_image_detection/tree/main
 def dima806_Image_Classification(image_path):
     # Use a pipeline as a high-level helper
-    from transformers import pipeline
+    # from transformers import pipeline
 
     pipe = pipeline("image-classification", model="dima806/ai_vs_real_image_detection")
 
@@ -122,7 +124,7 @@ def dima806_Image_Classification(image_path):
 # https://huggingface.co/Hemg/AI-VS-REAL-IMAGE-DETECTION
 def Hemg_Image_Classification(image_path):
     # Use a pipeline as a high-level helper
-    from transformers import pipeline
+    # from transformers import pipeline
 
     pipe = pipeline("image-classification", model="Hemg/AI-VS-REAL-IMAGE-DETECTION")
 
