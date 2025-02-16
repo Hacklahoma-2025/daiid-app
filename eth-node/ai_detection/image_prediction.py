@@ -8,6 +8,7 @@ from io import BytesIO
 load_dotenv()
 MODEL_NUMBER = os.environ.get("MODEL_NUMBER")
 
+
 def decode_base64_image(base64_str):
     """
     Decodes a Base64 encoded image string and returns a PIL.Image.
@@ -20,6 +21,7 @@ def decode_base64_image(base64_str):
 
     image_data = base64.b64decode(base64_data)
     return Image.open(BytesIO(image_data)).convert("RGB")
+
 
 def image_to_base64(image_path):
     """
@@ -35,7 +37,7 @@ def jacoballessio_Image_Classification(image_input):
 
     pipe = pipeline("image-classification",
                     model="jacoballessio/ai-image-detect")
-    
+
     image = decode_base64_image(image_input)
 
     result = pipe(image)
@@ -48,11 +50,13 @@ def jacoballessio_Image_Classification(image_input):
     return ai_confidence
 
 # https://huggingface.co/Organika/sdxl-detector/tree/main
+
+
 def sdxl_Image_Classification(image_input):
     from transformers import pipeline
 
     pipe = pipeline("image-classification", model="Organika/sdxl-detector")
-    
+
     image = decode_base64_image(image_input)
 
     result = pipe(image)
@@ -64,12 +68,14 @@ def sdxl_Image_Classification(image_input):
     return ai_confidence
 
 # https://huggingface.co/jacoballessio/ai-image-detect-distilled/tree/main
+
+
 def jacoballessio_distilled_Image_Classification(image_input):
     from transformers import pipeline
 
     pipe = pipeline("image-classification",
                     model="jacoballessio/ai-image-detect-distilled")
-    
+
     image = decode_base64_image(image_input)
 
     result = pipe(image)
@@ -81,12 +87,14 @@ def jacoballessio_distilled_Image_Classification(image_input):
     return ai_confidence
 
 # https://huggingface.co/dima806/ai_vs_real_image_detection/tree/main
+
+
 def dima806_Image_Classification(image_input):
     from transformers import pipeline
 
     pipe = pipeline("image-classification",
                     model="dima806/ai_vs_real_image_detection")
-    
+
     image = decode_base64_image(image_input)
 
     result = pipe(image)
@@ -98,12 +106,14 @@ def dima806_Image_Classification(image_input):
     return ai_confidence
 
 # https://huggingface.co/Hemg/AI-VS-REAL-IMAGE-DETECTION
+
+
 def Hemg_Image_Classification(image_input):
     from transformers import pipeline
 
     pipe = pipeline("image-classification",
                     model="Hemg/AI-VS-REAL-IMAGE-DETECTION")
-    
+
     image = decode_base64_image(image_input)
 
     result = pipe(image)
@@ -115,6 +125,8 @@ def Hemg_Image_Classification(image_input):
     return ai_confidence
 
 # Optionally, update the MobileNetV3-based classifier if you want to support base64.
+
+
 def MobileNetV3Small_Image_Classification(image_input):
     import torch
     import torchvision.models as models
@@ -148,7 +160,8 @@ def MobileNetV3Small_Image_Classification(image_input):
     print(f"Prediction: {result_label} (Confidence: {probability:.2f})")
     return probability
 
-def is_image_AI_generated(image_input):
+
+def is_image_AI_generated(image_base64):
     """
     Returns the confidence that the image is AI-generated (0-1)
     0: Real Image
@@ -162,5 +175,5 @@ def is_image_AI_generated(image_input):
         "2": sdxl_Image_Classification,
         "3": jacoballessio_distilled_Image_Classification,
     }[MODEL_NUMBER]
-    ai_confidence = model(image_input)
+    ai_confidence = model(image_base64)
     return ai_confidence

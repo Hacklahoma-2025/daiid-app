@@ -6,7 +6,7 @@ import requests
 import magic  # or import magic from python-magic-bin on Windows
 from web3 import Web3
 from dotenv import load_dotenv
-from ai_detection.image_prediction import detect_ai_probability
+from ai_detection.image_prediction import is_image_AI_generated
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,7 +25,7 @@ if not w3.is_connected():
     raise Exception("Could not connect to the Ethereum node!")
 
 # Load the contract artifact and extract the ABI
-with open("./eth-node/DAIID.json", "r") as f:
+with open("./DAIID.json", "r") as f:
     artifact = json.load(f)
 contract_abi = artifact["abi"]
 
@@ -45,8 +45,6 @@ if not ipfs_provider:
     raise Exception(
         "Please set the IPFS_PROVIDER environment variable in your .env file.")
 # We assume IPFS_PROVIDER is provided as an HTTP gateway URL, e.g., "http://10.204.202.78:8080"
-
-
 
 
 # -----------------------
@@ -76,7 +74,7 @@ def detect_ai_probability(filee_path):
     Replace this function with your actual AI detection logic.
     Returns an integer between 0 and 100.
     """
-    return detect_ai_probability(filee_path)
+    return is_image_AI_generated(filee_path)
 
 # -----------------------
 # Event Handling Function
@@ -106,33 +104,10 @@ def handle_new_image_event(event):
         print("Failed to download image from IPFS:", e)
         return
 
-    # Save the image with the correct file type
-    download_folder = "downloaded_images"
-    if not os.path.exists(download_folder):
-        os.makedirs(download_folder)
-
-    # Use python-magic to detect the MIME type of the image
-    mime = magic.Magic(mime=True)
-    mime_type = mime.from_buffer(image_data)
-    print(f"Detected MIME type: {mime_type}")
-
-    # Map MIME types to file extensions (extend this as needed)
-    extension_map = {
-        "image/jpeg": ".jpg",
-        "image/png": ".png",
-        "image/gif": ".gif",
-        "image/bmp": ".bmp",
-        "image/webp": ".webp"
-    }
-    file_extension = extension_map.get(mime_type, ".bin")
-    file_path = os.path.join(download_folder, f"{ipfs_cid}{file_extension}")
-
-    with open(file_path, "wb") as f:
-        f.write(image_data)
-    print(f"Image saved to: {file_path}")
+    image_base64 = image_data.decode("utf-8")
 
     # Run the AI detection (placeholder)
-    probability = detect_ai_probability(file_path)
+    probability = detect_ai_probability(image_base64)
     print(f"Detected AI probability: {probability}")
 
     # Build the transaction to cast the vote
@@ -170,8 +145,10 @@ def main():
         'gasPrice': w3.to_wei('50', 'gwei')
     })
 
-    signed_stake_txn = w3.eth.account.sign_transaction(stake_txn, private_key=private_key)
-    stake_tx_hash = w3.eth.send_raw_transaction(signed_stake_txn.raw_transaction)
+    signed_stake_txn = w3.eth.account.sign_transaction(
+        stake_txn, private_key=private_key)
+    stake_tx_hash = w3.eth.send_raw_transaction(
+        signed_stake_txn.raw_transaction)
     print("Stake transaction sent. Tx hash:", stake_tx_hash.hex())
 
     # Wait for the transaction to be mined (optional)

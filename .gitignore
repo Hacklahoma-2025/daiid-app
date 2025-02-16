@@ -4,3 +4,4 @@ AI_Image_Detection/vit_model.pth
 **/node_modules/
 
 **/cache/
+**/__pycache__/
