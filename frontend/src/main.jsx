@@ -10,6 +10,7 @@ import "@mantine/dropzone/styles.css";
 // Pages
 import UploadPage from "./UploadPage.jsx";
 import App from "./App.jsx";
+import ImageStatus from "./ImageStatus.jsx";
 
 const theme = createTheme({
   /** Put your mantine theme override here */
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: "/upload",
     element: <UploadPage />,
+  },
+  {
+    path: "/image-status",
+    element: <ImageStatus />,
   },
 ]);
 
