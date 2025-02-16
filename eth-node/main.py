@@ -6,6 +6,7 @@ import requests
 import magic  # or import magic from python-magic-bin on Windows
 from web3 import Web3
 from dotenv import load_dotenv
+from ai_detection.image_prediction import detect_ai_probability
 
 # Load environment variables from .env file
 load_dotenv()
@@ -69,13 +70,13 @@ def ipfs_cat(cid):
 # -----------------------
 
 
-def detect_ai_probability(image_bytes):
+def detect_ai_probability(filee_path):
     """
     Placeholder function to determine the likelihood that an image was AI-generated.
     Replace this function with your actual AI detection logic.
     Returns an integer between 0 and 100.
     """
-    return random.randint(0, 100)
+    return detect_ai_probability(filee_path)
 
 # -----------------------
 # Event Handling Function
@@ -131,7 +132,7 @@ def handle_new_image_event(event):
     print(f"Image saved to: {file_path}")
 
     # Run the AI detection (placeholder)
-    probability = detect_ai_probability(image_data)
+    probability = detect_ai_probability(file_path)
     print(f"Detected AI probability: {probability}")
 
     # Build the transaction to cast the vote
