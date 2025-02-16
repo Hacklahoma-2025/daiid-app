@@ -1,0 +1,1 @@
+vit_model.pth file here: https://huggingface.co/jacoballessio/ai-image-detect/tree/main
