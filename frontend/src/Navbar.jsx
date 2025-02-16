@@ -3,11 +3,13 @@ import { Anchor, Flex, Title } from "@mantine/core";
 function Navbar() {
   return (
     <Flex align={"center"} gap={"xl"}>
-      <Title c={"white"} fw={300}>
-        DAIID
-      </Title>
-      <Anchor href="/" c={"white"}>
-        Home
+      <Anchor href="/">
+        <Title c={"white"} fw={300}>
+          DAIID
+        </Title>
+      </Anchor>
+      <Anchor href="/browse" c={"white"}>
+        Browse
       </Anchor>
       <Anchor href="/upload" c={"white"}>
         Upload
