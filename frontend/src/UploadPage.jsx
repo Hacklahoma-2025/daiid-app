@@ -27,7 +27,7 @@ function UploadPage() {
         <Stack gap={0}>
           <Demo />
           <Box>
-            <Button c={"black"} bg={"white"} size="md">
+            <Button c={"black"} bg={"white"} size="md" mt={30}>
               Evaluate
             </Button>
           </Box>
@@ -55,10 +55,11 @@ function Demo() {
 
   const selectedFile = form.values.file && (
     <Flex align="center" justify={"center"}>
-      <Text key={form.values.file.name} c={"white"}>
+      <Text key={form.values.file.name} c={"white"} mx={5}>
         <b>{form.values.file.name}</b>
       </Text>
       <CloseButton
+        mx={5}
         size="md"
         onClick={() => {
           form.setFieldValue("file", null);
@@ -106,8 +107,8 @@ function Demo() {
               src={preview}
               alt="Preview"
               width="100%"
-              height={350}
-              fit="contain" // Preserve aspect ratio and do not crop
+              fit="contain"
+              mt={30}
             />
           </Box>
         </>
