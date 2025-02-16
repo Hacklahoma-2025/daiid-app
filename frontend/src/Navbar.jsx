@@ -8,10 +8,10 @@ function Navbar() {
           DAIID
         </Title>
       </Anchor>
-      <Anchor href="/upload" c={"white"}>
+      <Anchor href="/process-image" c={"white"}>
         Upload
       </Anchor>
-      <Anchor href="/Monitor" c={"white"}>
+      <Anchor href="/monitor" c={"white"}>
         Monitor
       </Anchor>
     </Flex>

@@ -15,7 +15,7 @@ function App() {
   const [count, setCount] = useState(0);
   const navigate = useNavigate();
   const handleClick = () => {
-    navigate("/upload");
+    navigate("/process-image");
   };
 
   return (
