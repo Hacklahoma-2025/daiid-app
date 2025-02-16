@@ -18,9 +18,11 @@ import { useForm } from "@mantine/form";
 import { Center, CloseButton } from "@mantine/core";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { subscribe_image_registration, subscribe_vote_submission, subscribe_vote_finalization } from "../services/ganache_connection.js";
-
-
+import {
+  subscribe_image_registration,
+  subscribe_vote_submission,
+  subscribe_vote_finalization,
+} from "../services/ganache_connection.js";
 
 function ImageStatus() {
   const percent = 34;
@@ -29,11 +31,11 @@ function ImageStatus() {
   console.log(file, preview);
 
   const [votes, setVotes] = useState([]);
-  const [totalScore, setTotalScore] = useState(0);
+  const [totalWeight, setTotalWeight] = useState(0);
   /// State to accumulate vote submissions
   useEffect(() => {
     console.log("Votes updated:", votes);
-    setTotalScore(votes.reduce((acc, vote) => acc + vote.score, 0));
+    setTotalWeight(votes.reduce((acc, vote) => acc + Number(vote.weight), 0));
   }, [votes]);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ function ImageStatus() {
     const subscribeVotes = async () => {
       const subscription = await subscribe_vote_submission((voteData) => {
         // Append new vote data to the votes array
-        setVotes(prevVotes => [...prevVotes, voteData]);
+        setVotes((prevVotes) => [...prevVotes, voteData]);
         console.log(voteData);
       });
 
@@ -50,17 +52,17 @@ function ImageStatus() {
         if (subscription && subscription.unsubscribe) {
           subscription.unsubscribe();
         }
-      }
+      };
     };
 
     const unsubscribe = subscribeVotes();
 
     // Clean up subscription on unmount
     return () => {
-      if (typeof unsubscribe === 'function') {
+      if (typeof unsubscribe === "function") {
         unsubscribe();
       }
-    }
+    };
   }, []);
 
   return (
@@ -103,7 +105,7 @@ function ImageStatus() {
               likely to be AI generated.
             </Text>
             <ScrollArea h={350} my={5}>
-              {[...Array(10).keys()].map((i) => (
+              {votes.map((i) => (
                 <Paper
                   bg={rgba("#8C96D6", 0.3)}
                   c={"white"}
@@ -112,7 +114,7 @@ function ImageStatus() {
                   my={15}
                   key={i}
                 >
-                  Voting data from a specific node. Lots of data.
+                  {i.node} voted {i.score} {Number(i.weight) / totalWeight *100}%
                 </Paper>
               ))}
             </ScrollArea>
