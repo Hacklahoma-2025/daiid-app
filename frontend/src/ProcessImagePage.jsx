@@ -1,6 +1,8 @@
 import {
+  Grid,
   Center,
   CloseButton,
+  Group,
   Container,
   Box,
   Text,
@@ -14,6 +16,7 @@ import {
   Stack,
   ScrollArea,
   Table,
+  GridCol,
 } from "@mantine/core";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import Navbar from "./Navbar";
@@ -27,7 +30,7 @@ function ProcessImage() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [statusPage, setStatusPage] = useState(false);
-  const [consensus, setConsensus] = useState("x");
+  const [consensus, setConsensus] = useState("X");
   const [votes, setVotes] = useState([]);
   const [base64, setBase64] = useState(null);
   const [totalWeight, setTotalWeight] = useState(1n);
@@ -105,76 +108,110 @@ function ProcessImage() {
     }
   };
 
+  const selectedFile = form.values.file && (
+    <Flex align="center" justify={"center"}>
+      <Text key={form.values.file.name} c={"white"} mx={5} fw={300}>
+        <b>{form.values.file.name}</b>
+      </Text>
+      <CloseButton
+        mx={5}
+        size="md"
+        onClick={() => {
+          form.setFieldValue("file", null);
+          setPreview(null);
+        }}
+        style={{
+          backgroundColor: "white",
+          borderRadius: "50%",
+        }}
+      />
+    </Flex>
+  );
+
   return (
     <Container m={0} fluid align="center">
       <Navbar />
       <Space h={20} />
       <Flex
+        h={"75vh"}
         mt={20}
         align={"center"}
         justify={"space-around"}
         direction={{ base: "column", lg: "row" }}
       >
         {!statusPage ? (
-          <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
-            <Stack gap={0}>
-              <>
-                {!preview ? (
-                  <Dropzone
-                    bg={rgba("#8C96D6", 0.3)}
-                    h={250}
-                    c={"white"}
-                    p={0}
-                    multiple={false} // Only allow one file
-                    accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
-                    onDrop={handleDrop}
-                    onReject={() =>
-                      form.setFieldError("file", "Select an image only")
-                    }
-                  >
-                    <Center h={250} p={10}>
-                      <Dropzone.Idle>
-                        Drop your image here or select a file from your computer
-                      </Dropzone.Idle>
-                      <Dropzone.Accept>
-                        Drop your image here or select a file from your computer
-                      </Dropzone.Accept>
-                      <Dropzone.Reject>File is invalid</Dropzone.Reject>
-                    </Center>
-                  </Dropzone>
-                ) : (
-                  <>
-                    <Text mb={5} mt="md" c={"white"}>
-                      Selected file:
-                    </Text>
-                    <Box position="relative">
-                      <Image
-                        src={preview}
-                        alt="Preview"
-                        width="100%"
-                        fit="contain"
-                        mt={30}
-                      />
-                    </Box>
-                  </>
-                )}
-
-                {form.errors.file && (
-                  <Text c="red" mt={5}>
-                    {form.errors.file}
-                  </Text>
-                )}
-              </>
-              <Box>
-                <Button
-                  c={"black"}
-                  bg={"white"}
-                  size="md"
-                  mt={30}
-                  onClick={handleClick}
+          <Paper p={20} mt={20} maw={450} mih={450} bg={rgba("#8C96D6", 0.3)}>
+            <Stack gap={10} justify="space-evenly" mih={450}>
+              {!preview ? (
+                <Dropzone
+                  bg={rgba("#8C96D6", 0.3)}
+                  mih={250}
+                  c={"white"}
+                  p={0}
+                  multiple={false} // Only allow one file
+                  accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+                  onDrop={handleDrop}
+                  onReject={() =>
+                    form.setFieldError("file", "Select an image only")
+                  }
                 >
-                  Evaluate
-                </Button>
+                  <Center h={250} p={10}>
+                    <Dropzone.Idle>
+                      Drop your image here or select a file from your computer
+                    </Dropzone.Idle>
+                    <Dropzone.Accept>
+                      Drop your image here or select a file from your computer
+                    </Dropzone.Accept>
+                    <Dropzone.Reject>File is invalid</Dropzone.Reject>
+                  </Center>
+                </Dropzone>
+              ) : (
+                <>
+                  <Text mb={5} mt="md" c={"white"} size="lg" fw={600}>
+                    Selected file
+                  </Text>
+                  {selectedFile}
+                  <Box position="relative">
+                    <Image
+                      src={preview}
+                      alt="Preview"
+                      width="100%"
+                      fit="contain"
+                      mt={15}
+                    />
+                  </Box>
+                </>
+              )}
+
+              {form.errors.file && (
+                <Text c="red" mt={5}>
+                  {form.errors.file}
+                </Text>
+              )}
+
+              <Box>
+                {!preview ? (
+                  <Button
+                    c={"black"}
+                    bg={"white"}
+                    size="md"
+                    mt={30}
+                    disabled
+                    variant="dimmed"
+                  >
+                    Evaluate
+                  </Button>
+                ) : (
+                  <Button
+                    c={"black"}
+                    bg={"white"}
+                    size="md"
+                    mt={30}
+                    onClick={handleClick}
+                  >
+                    Evaluate
+                  </Button>
+                )}
               </Box>
             </Stack>
           </Paper>
@@ -194,6 +231,7 @@ function ProcessImage() {
             </Paper>
             <Paper
               p={20}
+              pt={40}
               mt={20}
               w={{ base: "100%", md: "40%" }}
               bg={rgba("#8C96D6", 0.3)}
@@ -208,30 +246,46 @@ function ProcessImage() {
                 <Text align="center" size="lg" c={"white"}>
                   likely to be AI generated.
                 </Text>
-                <ScrollArea h={350} my={5}>
-                  <Table highlightOnHover withBorder style={{ color: "white" }}>
-                    <thead>
-                      <tr>
-                        <th>Node</th>
-                        <th>Score (%)</th>
-                        <th>Weight (%)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <Space h={15} />
+                <Grid mt={10}>
+                  <GridCol span={6}>
+                    <Text c={"white"} fw={600}>
+                      Node
+                    </Text>
+                  </GridCol>
+                  <GridCol span={3}>
+                    <Text c={"white"} fw={600}>
+                      Score (%)
+                    </Text>
+                  </GridCol>
+                  <GridCol span={3}>
+                    {" "}
+                    <Text c={"white"} fw={600}>
+                      Weight (%)
+                    </Text>
+                  </GridCol>
+                </Grid>
+                <ScrollArea h={275} my={5}>
+                  <Table c={"white"} verticalSpacing={"md"}>
+                    <Table.Tbody>
                       {votes.map((vote, index) => (
-                        <tr key={index}>
-                          <td>{vote.node.substring(0, 10)}...</td>
-                          <td>{vote.score}%</td>
-                          <td>
+                        <Table.Tr key={index}>
+                          <Table.Td w={"50%"} align="center">
+                            {vote.node.substring(0, 20)}...
+                          </Table.Td>
+                          <Table.Td w={"25%"} align="center">
+                            {vote.score}%
+                          </Table.Td>
+                          <Table.Td w={"25%"} align="center">
                             {(
                               (Number(vote.weight) / Number(totalWeight)) *
                               100
                             ).toFixed(2)}
                             %
-                          </td>
-                        </tr>
+                          </Table.Td>
+                        </Table.Tr>
                       ))}
-                    </tbody>
+                    </Table.Tbody>
                   </Table>
                 </ScrollArea>
               </Stack>
