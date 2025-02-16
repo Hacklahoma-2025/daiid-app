@@ -1,2 +1,8 @@
 web3
 ipfshttpclient
+torch
+torchvision
+timm
+huggingface_hub
+pillow
+transformers
