@@ -12,7 +12,9 @@
   "dependencies": {
     "@mantine/core": "^7.16.3",
     "@mantine/dropzone": "^7.16.3",
+    "@mantine/form": "^7.16.3",
     "@mantine/hooks": "^7.16.3",
+    "@tabler/icons-react": "^3.30.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.5"
