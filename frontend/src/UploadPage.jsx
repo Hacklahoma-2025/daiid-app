@@ -17,27 +17,14 @@ import Navbar from "./Navbar";
 import { useForm } from "@mantine/form";
 import { Center, CloseButton } from "@mantine/core";
 import { useState } from "react";
+import registerImage from "../services/uploadRequest_new.js";
+import getConsensus from "../services/GetConsensus.js";
+
+
 
 function UploadPage() {
-  return (
-    <Container m={0} fluid align="center">
-      <Navbar />
-      <Space h={20} />
-      <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
-        <Stack gap={0}>
-          <Demo />
-          <Box>
-            <Button c={"black"} bg={"white"} size="md" mt={30}>
-              Evaluate
-            </Button>
-          </Box>
-        </Stack>
-      </Paper>
-    </Container>
-  );
-}
+  const [file, setFile] = useState(null);
 
-function Demo() {
   const form = useForm({
     initialValues: { file: null },
   });
@@ -46,6 +33,8 @@ function Demo() {
 
   const handleDrop = (files) => {
     const file = files[0]; // Only take the first file
+    setFile(file);
+    console.log(file);
     form.setFieldValue("file", file);
     setPreview(URL.createObjectURL(file));
     console.log(`File name: ${file.name}`);
@@ -73,8 +62,40 @@ function Demo() {
     </Flex>
   );
 
+  const handleClick = async () => {
+    if (file) {
+      try {
+
+        // Compute base64 string from file
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file); // Reads file as a base64 encoded data URL
+        });
+
+        // Output base64 string
+        console.log("Base64 output:", base64);
+
+        // Call the registerImage function
+        await registerImage(base64);
+      }
+      catch (error) {
+        console.error("Error computing base64:", error);
+      }
+    } else {
+      console.warn("No file selected.");
+    }
+  };
+
+
   return (
-    <>
+    <Container m={0} fluid align="center">
+      <Navbar />
+      <Space h={20} />
+      <Paper p={20} mt={20} maw={450} bg={rgba("#8C96D6", 0.3)}>
+        <Stack gap={0}>
+        <>
       {!preview ? (
         <Dropzone
           bg={rgba("#8C96D6", 0.3)}
@@ -120,6 +141,14 @@ function Demo() {
         </Text>
       )}
     </>
+          <Box>
+            <Button c={"black"} bg={"white"} size="md" mt={30} onClick={handleClick}>
+              Evaluate
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
+    </Container>
   );
 }
 
