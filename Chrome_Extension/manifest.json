@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Image Analyzer",
     "version": "1.0",
-    "permissions": ["activeTab", "scripting", "storage"],
+    "permissions": ["activeTab", "scripting", "storage", "tabs"],
     "background": {
       "service_worker": "background.js"
     },

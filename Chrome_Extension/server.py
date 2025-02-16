@@ -37,6 +37,7 @@ def process():
 
     except Exception as e:
         print(f"Error: {e}")
+        return jsonify({"error": "Error downloading image"}), 500
     
     # Run the AI model on the image
     result = image_prediction.is_image_AI_generated(save_path)
