@@ -6,7 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "deploy-remote": "npx hardhat run scripts/deploy.js --network remote"
   },
   "author": "",
   "license": "ISC",
@@ -16,5 +17,9 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "ethers": "^6.13.5",
     "hardhat": "^2.22.18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ipfs-http-client": "^60.0.1"
   }
 }

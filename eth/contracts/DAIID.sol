@@ -103,11 +103,13 @@ contract DAIID {
     /// @dev For each voter, if the vote is close to the consensus, reward reputation.
     ///      If the vote is significantly off, penalize reputation and slash stake.
     ///      This function should be called only once per image.
+    ///      Reverts if fewer than 4 votes have been cast.
     /// @param imageHash The unique identifier for the image.
     function finalizeVote(bytes32 imageHash) public {
         ImageVote storage iv = imageVotes[imageHash];
         require(!iv.finalized, "Vote already finalized");
         require(iv.totalWeight > 0, "No votes cast");
+        require(iv.voters.length >= 4, "At least 4 votes required");
 
         uint256 consensus = iv.weightedScore / iv.totalWeight;
 
